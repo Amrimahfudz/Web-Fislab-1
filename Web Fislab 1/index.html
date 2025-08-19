@@ -541,31 +541,7 @@
                 submitButton.disabled = false;
             });
         });
-
-        // Logika night mode (tidak berubah)
-        const prefersDark = localStorage.getItem('fislab-theme') === 'dark';
-        const sunIcon = document.querySelector('.sun-icon');
-        const moonIcon = document.querySelector('.moon-icon');
-        if (prefersDark) {
-            document.body.classList.add('dark');
-            sunIcon.style.display = 'none';
-            moonIcon.style.display = 'block';
-        } else {
-            sunIcon.style.display = 'block';
-            moonIcon.style.display = 'none';
-        }
-        modeToggleBtn.addEventListener('click', () => {
-            const willBeDark = !document.body.classList.contains('dark');
-            document.body.classList.toggle('dark');
-            localStorage.setItem('fislab-theme', willBeDark ? 'dark' : 'light');
-            if (willBeDark) {
-                sunIcon.style.display = 'none';
-                moonIcon.style.display = 'block';
-            } else {
-                sunIcon.style.display = 'block';
-                moonIcon.style.display = 'none';
-            }
-        });
     </script>
 </body>
+
 </html>
