@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nilai Praktikum - FISLAB I</title>
+    <style>
+        :root {
+            --primary-gold: #cfa330;
+            --dark-bg: #1a1a1a;
+            --text-color: #000000;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Times New Roman', serif;
+            background-color: var(--primary-gold);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        /* Header dan Sidebar styles sama seperti halaman lain */
+        .top-left-header {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-color);
+            z-index: 1000;
+        }
+        .top-left-header .header-logo {
+            font-size: 1.8rem;
+            line-height: 1;
+            transition: transform 0.8s ease;
+        }
+        .top-left-header .header-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.9px;
+            transition: transform 1.5s ease;
+        }
+
+        .hamburger {
+            width: 36px;
+            height: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background: transparent;
+            color: inherit;
+            border: 0;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateX(-8px) scale(0.9);
+            transition: opacity 0.3s ease, transform 0.5s ease;
+            pointer-events: none;
+            padding: 0;
+        }
+        .hamburger .bar {
+            width: 18px;
+            height: 2px;
+            background-color: currentColor;
+            display: block;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .top-left-header.menu-visible .hamburger {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: auto;
+        }
+        .top-left-header.menu-visible .header-logo,
+        .top-left-header.menu-visible .header-text {
+            transform: translateX(10px);
+        }
+
+        .top-left-header.menu-visible .hamburger:hover {
+            transform: translateX(0) scale(1.08);
+        }
+
+        .top-border-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            border: 0;
+            border-bottom: 1px solid #000000;
+            box-sizing: border-box;
+            background-color: var(--primary-gold);
+            pointer-events: none;
+            z-index: 900;
+        }
+
+        .mode-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--text-color);
+            color: var(--primary-gold);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            font-family: 'Times New Roman', serif;
+            cursor: pointer;
+            z-index: 1200;
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .mode-toggle:hover { transform: scale(1.06); }
+
+        .mode-toggle .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            transition: transform 0.3s ease;
+        }
+
+        .mode-toggle:hover .icon {
+            transform: rotate(15deg);
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 100px auto 48px;
+            padding: 0 16px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 260px;
+            height: calc(100vh - 64px);
+            background: var(--text-color);
+            color: var(--primary-gold);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 950;
+            box-shadow: 2px 0 14px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar .side-title {
+            font-weight: 700;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        .sidebar nav { padding: 8px 0; }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: currentColor;
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.15s ease;
+        }
+        .sidebar a:hover { background-color: rgba(255,255,255,0.08); transform: translateX(4px); }
+        .sidebar a.active { background-color: var(--primary-gold); color: var(--text-color); }
+        .sidebar a .icon { width: 18px; height: 18px; display: inline-block; }
+        .sidebar a .icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 940;
+        }
+
+        body.sidebar-open .sidebar { transform: translateX(0); }
+        body.sidebar-open .sidebar-overlay { opacity: 1; visibility: visible; }
+
+        /* Konten halaman nilai */
+        
+        .page-header {
+            background: var(--text-color);
+            color: var(--primary-gold);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.25);
+        }
+
+        .page-title {
+            margin: 0 0 8px;
+            font-size: 2rem;
+        }
+
+        .page-subtitle {
+            margin: 0;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* Tabel nilai */
+        .nilai-table-container {
+            background: var(--text-color);
+            color: var(--primary-gold);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.25);
+            overflow-x: auto;
+        }
+
+        .nilai-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .nilai-table th,
+        .nilai-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(207, 163, 48, 0.2);
+        }
+
+        .nilai-table th {
+            background-color: rgba(207, 163, 48, 0.1);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .nilai-table tr:hover {
+            background-color: rgba(207, 163,48, 0.05);
+        }
+
+        .nilai-score {
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: center;
+            min-width: 40px;
+            display: inline-block;
+        }
+
+        .score-a {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .score-b {
+            background-color: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+
+        .score-c {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .score-d {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .status-completed {
+            color: #4caf50;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            color: #ff9800;
+            font-weight: 500;
+        }
+
+        .status-not-started {
+            color: #9e9e9e;
+            font-weight: 500;
+        }
+
+        /* Dark mode overrides */
+        body.dark { background-color: var(--dark-bg); color: var(--primary-gold); }
+        body.dark .top-left-header { color: var(--primary-gold); }
+        body.dark .top-border-box { border-bottom-color: var(--primary-gold); background-color: var(--dark-bg); }
+        body.dark .mode-toggle { background-color: var(--primary-gold); color: #1a1a1a; }
+        body.dark .mode-toggle .icon { fill: #1a1a1a; }
+        body.dark .page-header, body.dark .nilai-table-container { background: #2a2a2a; color: #ffffff; }
+        body.dark .sidebar { background: #2a2a2a; color: #ffffff; }
+        body.dark .sidebar a:hover { background-color: rgba(207,163,48,0.15); }
+        body.dark .nilai-table th { background-color: rgba(207, 163, 48, 0.15); }
+        body.dark .nilai-table tr:hover { background-color: rgba(207, 163, 48, 0.1); }
+
+        /* Modal for nilai detail */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-dialog { background: var(--text-color); color: var(--primary-gold); border-radius: 10px; padding: 20px; max-width: 420px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-header { font-weight: 700; margin-bottom: 10px; font-size: 1.2rem; }
+        .modal-body { font-size: 1rem; }
+        .modal-close { margin-top: 16px; width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary-gold); color: var(--text-color); font-weight: 700; cursor: pointer; }
+        body.dark .modal-dialog { background: #2a2a2a; color: #ffffff; }
+    </style>
+</head>
+<body>
+    <header class="top-left-header" aria-label="Brand header">
+        <button id="hamburger" class="hamburger" type="button" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+        <span class="header-logo">Φ</span>
+        <span class="header-text">FISLAB I</span>
+    </header>
+    <div class="top-border-box" aria-hidden="true"></div>
+    <button id="mode-toggle" class="mode-toggle" type="button" aria-label="Toggle night mode">
+        <svg class="icon sun-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg class="icon moon-icon" viewBox="0 0 24 24" aria-hidden="true" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
+
+    <aside id="sidebar" class="sidebar" aria-label="Sidebar navigasi">
+        <div class="side-title">Menu</div>
+        <nav>
+            <a href="profile.html" id="nav-profile">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </span>
+                <span class="label">Profile</span>
+            </a>
+            <a href="home.html" id="nav-home">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="8" height="8" rx="1"/>
+                        <rect x="13" y="3" width="8" height="8" rx="1"/>
+                        <rect x="3" y="13" width="8" height="8" rx="1"/>
+                        <rect x="13" y="13" width="8" height="8" rx="1"/>
+                    </svg>
+                </span>
+                <span class="label">Dashboard</span>
+            </a>
+            <a href="modul.html" id="nav-modul">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="8" height="16" rx="1"/>
+                        <rect x="13" y="4" width="8" height="16" rx="1"/>
+                    </svg>
+                </span>
+                <span class="label">Modul Praktikum</span>
+            </a>
+            <a href="kontak.html" id="nav-contacts">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="5" width="18" height="14" rx="1"/>
+                        <path d="M3 7l9 6 9-6"/>
+                    </svg>
+                </span>
+                <span class="label">Kontak Asisten Laboratorium</span>
+            </a>
+            <a href="nilai.html" id="nav-nilai" class="active">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    </svg>
+                </span>
+                <span class="label">Nilai Praktikum</span>
+            </a>
+            <a href="penilaian.html" id="nav-penilaian" style="display: none;">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    </svg>
+                </span>
+                <span class="label">Penilaian Praktikum</span>
+            </a>
+            <a href="jadwal.html" id="nav-schedule">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="17" rx="1"/>
+                        <path d="M8 2v4M16 2v4M3 10h18"/>
+                    </svg>
+                </span>
+                <span class="label">Jadwal Praktikum</span>
+            </a>
+            <a href="#" id="nav-logout">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/>
+                        <path d="M14 16l4-4-4-4"/>
+                        <path d="M8 12h10"/>
+                    </svg>
+                </span>
+                <span class="label">Keluar</span>
+            </a>
+        </nav>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+    <main class="page-container">
+
+        <div class="nilai-table-container">
+            <h2 style="margin-top: 0;">Detail Nilai Praktikum</h2>
+            <p id="nilai-subtitle" class="page-subtitle">Memuat data...</p>
+            <table class="nilai-table">
+                <thead>
+                    <tr>
+                        <th>Modul</th>
+                        <th>Status</th>
+                        <th>Nilai</th>
+                        <th>Tanggal</th>
+                        <th>Catatan</th>
+                    </tr>
+                </thead>
+                <tbody id="nilai-body"></tbody>
+            </table>
+            <div id="nilai-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-header" id="modal-title">Detail Nilai</div>
+                    <div class="modal-body" id="modal-body">-</div>
+                    <button class="modal-close" id="modal-close">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyAE5AoE14HJmu6kBedIYOpp-93A1mFs_BU", authDomain: "fislab-1-70619.firebaseapp.com", databaseURL: "https://fislab-1-70619-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "fislab-1-70619", storageBucket: "fislab-1-70619.firebasestorage.app", messagingSenderId: "1081825635769", appId: "1:1081825635769:web:ddaf43a9c9363342eeda68", measurementId: "G-4GR94PXV4D" };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+
+        // Render nilai from Firebase
+        function renderNilai(allData, userData){
+            const tbody = document.getElementById('nilai-body');
+            const subtitle = document.getElementById('nilai-subtitle');
+            const { judulPraktikum } = allData;
+            const nilai = userData.nilai || {};
+            const kelompokId = userData.kelompokId || '-';
+            subtitle.textContent = `NRP ${userData.nrp} • ${userData.nama} • ${kelompokId}`;
+            const modulIds = Object.keys(judulPraktikum).sort((a,b)=>{
+                const na = parseInt(a.replace('E',''),10); const nb = parseInt(b.replace('E',''),10); return na-nb;
+            });
+            tbody.innerHTML = modulIds.map(mid => {
+                const n = nilai[mid] || { 'pre-lab': '', 'in-lab': '', 'post-lab': '' };
+                const numbers = [n['pre-lab'], n['in-lab'], n['post-lab']].map(x=> parseFloat(x)).filter(v=> !isNaN(v));
+                const filled = numbers.length > 0;
+                const avg = filled ? (numbers.reduce((a,b)=>a+b,0)/numbers.length).toFixed(2) : '-';
+                const statusCls = filled ? 'status-completed' : 'status-not-started';
+                const statusTxt = filled ? 'Ada Nilai' : 'Belum Dinilai';
+                const detail = `${n['pre-lab']||'-'} / ${n['in-lab']||'-'} / ${n['post-lab']||'-'}`;
+                const note = (n['catatan']||'-');
+                return `<tr>
+                    <td>${mid} - ${judulPraktikum[mid].namaJudul}</td>
+                    <td><span class="${statusCls}">${statusTxt}</span></td>
+                    <td><button class="avg-btn" data-mid="${mid}" data-detail="${detail}" data-modul="${mid} - ${judulPraktikum[mid].namaJudul}" title="Klik untuk melihat detail">${avg}</button></td>
+                    <td>-</td>
+                    <td>${note}</td>
+                </tr>`;
+            }).join('');
+            // wiring modal detail
+            tbody.addEventListener('click', (e)=>{
+                const btn = e.target && e.target.closest('.avg-btn');
+                if (!btn) return;
+                const modal = document.getElementById('nilai-modal');
+                const title = document.getElementById('modal-title');
+                const body = document.getElementById('modal-body');
+                title.textContent = btn.dataset.modul;
+                body.textContent = `Pre / In / Post: ${btn.dataset.detail}`;
+                modal.style.display = 'flex';
+                modal.setAttribute('aria-hidden','false');
+            });
+            const modal = document.getElementById('nilai-modal');
+            const modalClose = document.getElementById('modal-close');
+            modalClose.addEventListener('click', ()=>{ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); });
+            modal.addEventListener('click', (e)=>{ if(e.target === modal){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); }});
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loggedInNrp = localStorage.getItem('fislab-nrp');
+            if (!loggedInNrp) { alert('Anda belum login.'); window.location.href = 'index.html'; return; }
+            database.ref('users/' + loggedInNrp).once('value', (snap)=>{
+                if (!snap.exists()) { alert('Data pengguna tidak ditemukan.'); window.location.href = 'index.html'; return; }
+                const userData = snap.val();
+                if (userData.role) localStorage.setItem('fislab-role', userData.role);
+                database.ref('/').once('value', (dbSnap)=>{
+                    if (dbSnap.exists()) renderNilai(dbSnap.val(), userData);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

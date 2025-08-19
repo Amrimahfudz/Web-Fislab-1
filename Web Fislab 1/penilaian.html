@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penilaian Praktikum - FISLAB I</title>
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-gold: #cfa330;
+            --dark-bg: #1a1a1a;
+            --text-color: #000000;
+            --sidebar-width: 260px;
+            --header-height: 64px;
+            --white: #ffffff;
+        }
+
+        /* Dark mode variables */
+        :root.dark {
+            --text-color: #ffffff;
+            --dark-bg: #1a1a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: var(--primary-gold);
+            color: var(--dark-bg);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        html, body { overflow-x: hidden; }
+
+        body.dark {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+        }
+
+        /* Header - Updated to match other pages */
+        .top-left-header {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-color);
+            z-index: 1000;
+        }
+        .top-left-header .header-logo {
+            font-size: 1.8rem;
+            line-height: 1;
+            transition: transform 0.8s ease;
+        }
+        .top-left-header .header-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.9px;
+            transition: transform 1.5s ease;
+        }
+
+        /* Tombol hamburger (3 garis) */
+        .hamburger {
+            width: 36px;
+            height: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background: transparent;
+            color: inherit;
+            border: 0;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateX(-8px) scale(0.9);
+            transition: opacity 0.3s ease, transform 0.5s ease;
+            pointer-events: none;
+            padding: 0;
+        }
+        .hamburger .bar {
+            width: 18px;
+            height: 2px;
+            background-color: currentColor;
+            display: block;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        /* Saat menu ditampilkan, tombol masuk dan brand bergeser sedikit ke kanan */
+        .top-left-header.menu-visible .hamburger {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: auto;
+        }
+        .top-left-header.menu-visible .header-logo,
+        .top-left-header.menu-visible .header-text {
+            transform: translateX(10px);
+        }
+
+        /* Efek mengembang saat hover ketika tombol sudah tampil */
+        .top-left-header.menu-visible .hamburger:hover {
+            transform: translateX(0) scale(1.08);
+        }
+
+        /* Garis bawah header (atas halaman) */
+        .top-border-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            border: 0;
+            border-bottom: 1px solid #000000;
+            box-sizing: border-box;
+            background-color: var(--primary-gold);
+            pointer-events: none;
+            z-index: 900;
+        }
+
+        /* Tombol night mode (pojok kanan atas) */
+        .mode-toggle {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--text-color);
+            color: var(--primary-gold);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            font-family: 'Times New Roman', serif;
+            cursor: pointer;
+            z-index: 1200;
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .mode-toggle:hover { transform: scale(1.06); }
+
+        .mode-toggle .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            transition: transform 0.3s ease;
+        }
+
+        .mode-toggle:hover .icon {
+            transform: rotate(15deg);
+        }
+
+        /* Sidebar - Updated to match other pages */
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 260px;
+            height: calc(100vh - 64px);
+            background: var(--text-color);
+            color: var(--primary-gold);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 950;
+            box-shadow: 2px 0 14px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar .side-title {
+            font-weight: 700;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        .sidebar nav { padding: 8px 0; }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: currentColor;
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.15s ease;
+        }
+        .sidebar a:hover { background-color: rgba(255,255,255,0.08); transform: translateX(4px); }
+        .sidebar a.active { background-color: var(--primary-gold); color: var(--text-color); }
+        .sidebar a .icon { width: 18px; height: 18px; display: inline-block; }
+        .sidebar a .icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 940;
+        }
+
+        /* Open state */
+        body.sidebar-open .sidebar { transform: translateX(0); }
+        body.sidebar-open .sidebar-overlay { opacity: 1; visibility: visible; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 0;
+            margin-top: 100px;
+            padding: 30px;
+            min-height: calc(100vh - 100px);
+            max-width: 960px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-header {
+            margin-top: -10px;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--primary-gold);
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--dark-bg);
+            opacity: 0.8;
+        }
+
+        body.dark .page-subtitle {
+            color: var(--text-color);
+        }
+
+        /* Assessment Form */
+        .assessment-form {
+            background-color: var(--text-color);
+            border: 2px solid var(--primary-gold);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            margin-top: -50px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark .assessment-form {
+            background-color: var(--dark-bg);
+            border-color: var(--primary-gold);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--primary-gold);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-gold);
+        }
+
+        body.dark .form-group label {
+            color: var(--primary-gold);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--primary-gold);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            background-color: var(--text-color);
+            color: var(--primary-gold);
+            transition: border-color 0.2s ease;
+        }
+
+        body.dark .form-group input,
+        body.dark .form-group select,
+        body.dark .form-group textarea {
+            background-color: var(--dark-bg);
+            color: var(--primary-gold);
+            border-color: var(--primary-gold);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--dark-bg);
+        }
+
+        body.dark .form-group input:focus,
+        body.dark .form-group select:focus,
+        body.dark .form-group textarea:focus {
+            border-color: var(--primary-gold);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-gold);
+            color: var(--dark-bg);
+            border: none;
+            padding: 14px 28px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(207, 163, 48, 0.3);
+        }
+
+        /* Assessment History */
+        .assessment-history {
+            background-color: var(--text-color);
+            border: 2px solid var(--primary-gold);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark .assessment-history {
+            background-color: var(--dark-bg);
+            border-color: var(--primary-gold);
+        }
+
+        .history-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--primary-gold);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        /* Make history table horizontally scrollable without moving the page */
+        .history-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain; /* prevent scroll chaining to page */
+            touch-action: pan-x; /* prioritize horizontal gestures here */
+        }
+
+        /* Ensure table can overflow horizontally on small screens */
+        .history-table { min-width: 720px; }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            color: var(--primary-gold);
+            border-bottom: 1px solid var(--primary-gold);
+        }
+
+        body.dark .history-table th,
+        body.dark .history-table td {
+            border-bottom-color: var(--primary-gold);
+        }
+
+        .history-table th {
+            background-color: var(--primary-gold);
+            color: var(--dark-bg);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: var(--dark-bg);
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-rejected {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Dark mode overrides */
+        body.dark { background-color: var(--dark-bg); color: var(--primary-gold); }
+        body.dark .top-left-header { color: var(--primary-gold); }
+        body.dark .top-border-box { border-bottom-color: var(--primary-gold); background-color: var(--dark-bg); }
+        body.dark .mode-toggle { background-color: var(--primary-gold); color: #1a1a1a; }
+        body.dark .mode-toggle .icon { fill: #1a1a1a; }
+        body.dark .sidebar { background: #2a2a2a; color: #ffffff; }
+        body.dark .sidebar a:hover { background-color: rgba(207,163,48,0.15); }
+    </style>
+</head>
+<body>
+    <header class="top-left-header" aria-label="Brand header">
+        <button id="hamburger" class="hamburger" type="button" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+        <span class="header-logo">Φ</span>
+        <span class="header-text">FISLAB I</span>
+    </header>
+    <div class="top-border-box" aria-hidden="true"></div>
+    <button id="mode-toggle" class="mode-toggle" type="button" aria-label="Toggle night mode">
+        <svg class="icon sun-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg class="icon moon-icon" viewBox="0 0 24 24" aria-hidden="true" style="display: none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
+
+    <aside id="sidebar" class="sidebar" aria-label="Sidebar navigasi">
+        <div class="side-title">Menu</div>
+        <nav>
+            <a href="profile.html" id="nav-profile">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </span>
+                <span class="label">Profile</span>
+            </a>
+            <a href="home.html" id="nav-home">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="8" height="8" rx="1"/>
+                        <rect x="13" y="3" width="8" height="8" rx="1"/>
+                        <rect x="3" y="13" width="8" height="8" rx="1"/>
+                        <rect x="13" y="13" width="8" height="8" rx="1"/>
+                    </svg>
+                </span>
+                <span class="label">Dashboard</span>
+            </a>
+            <a href="modul.html" id="nav-modul">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="8" height="16" rx="1"/>
+                        <rect x="13" y="4" width="8" height="16" rx="1"/>
+                    </svg>
+                </span>
+                <span class="label">Modul Praktikum</span>
+            </a>
+            <a href="kontak.html" id="nav-contacts">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="5" width="18" height="14" rx="1"/>
+                        <path d="M3 7l9 6 9-6"/>
+                    </svg>
+                </span>
+                <span class="label">Kontak Asisten Laboratorium</span>
+            </a>
+            <a href="nilai.html" id="nav-nilai" style="display: none;">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    </svg>
+                </span>
+                <span class="label">Nilai Praktikum</span>
+            </a>
+            <a href="penilaian.html" id="nav-penilaian" class="active">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    </svg>
+                </span>
+                <span class="label">Penilaian Praktikum</span>
+            </a>
+            <a href="jadwal.html" id="nav-schedule">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="17" rx="1"/>
+                        <path d="M8 2v4M16 2v4M3 10h18"/>
+                    </svg>
+                </span>
+                <span class="label">Jadwal Praktikum</span>
+            </a>
+            <a href="#" id="nav-logout">
+                <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/>
+                        <path d="M14 16l4-4-4-4"/>
+                        <path d="M8 12h10"/>
+                    </svg>
+                </span>
+                <span class="label">Keluar</span>
+            </a>
+        </nav>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+    <main class="main-content">
+
+        <section class="assessment-form">
+            <h2 class="form-title">Form Penilaian</h2>
+            <form id="assessment-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="modul">Modul Praktikum</label>
+                        <select id="modul" name="modul" required>
+                            <option value="">Pilih Modul (sesuai penugasan Anda)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kelompok">Kelompok</label>
+                        <select id="kelompok" name="kelompok" required>
+                            <option value="">Pilih Kelompok</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="praktikan">Praktikan</label>
+                        <select id="praktikan" name="praktikan" required>
+                            <option value="">Pilih Praktikan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pre-lab">Nilai Pre-lab (0-100)</label>
+                        <input type="number" id="pre-lab" name="pre-lab" min="0" max="100" placeholder="contoh: 80">
+                    </div>
+                    <div class="form-group">
+                        <label for="in-lab">Nilai In-lab (0-100)</label>
+                        <input type="number" id="in-lab" name="in-lab" min="0" max="100" placeholder="contoh: 85">
+                    </div>
+                    <div class="form-group">
+                        <label for="post-lab">Nilai Post-lab (0-100)</label>
+                        <input type="number" id="post-lab" name="post-lab" min="0" max="100" placeholder="contoh: 90">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="catatan">Catatan</label>
+                        <textarea id="catatan" name="catatan" placeholder="Opsional: catatan untuk praktikan..." style="min-height:100px;"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <small id="helper-text" style="opacity:0.8;"></small>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">Simpan Nilai</button>
+            </form>
+        </section>
+
+        <section class="assessment-history">
+            <h2 class="history-title">Riwayat Penilaian</h2>
+            <div class="history-table-wrapper">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Terakhir Diubah</th>
+                        <th>Kelompok</th>
+                        <th>NRP</th>
+                        <th>Nama</th>
+                        <th>Modul</th>
+                        <th>Nilai (pre / in / post)</th>
+                        <th>Rata-rata</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body"></tbody>
+            </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="sidebar.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyAE5AoE14HJmu6kBedIYOpp-93A1mFs_BU", authDomain: "fislab-1-70619.firebaseapp.com", databaseURL: "https://fislab-1-70619-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "fislab-1-70619", storageBucket: "fislab-1-70619.firebasestorage.app", messagingSenderId: "1081825635769", appId: "1:1081825635769:web:ddaf43a9c9363342eeda68", measurementId: "G-4GR94PXV4D" };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Require asisten role
+        function ensureAssistantOrRedirect(){
+            const role = localStorage.getItem('fislab-role');
+            if (role !== 'asisten laboratorium'){
+                alert('Halaman ini hanya untuk asisten laboratorium.');
+                window.location.href = 'jadwal.html';
+            }
+        }
+
+        // Populate dependent dropdowns based on assistant assignments
+        function populateFormOptions(allData, assistantNrp){
+            const modulSelect = document.getElementById('modul');
+            const kelompokSelect = document.getElementById('kelompok');
+            const praktikanSelect = document.getElementById('praktikan');
+            const helper = document.getElementById('helper-text');
+
+            // Modul yang diampu asisten ini diambil dari users[assistantNrp].judul → ["E1","E5",...]
+            const asisten = allData.users[assistantNrp];
+            const assignedModules = Array.isArray(asisten?.judul) ? asisten.judul : [];
+            modulSelect.innerHTML = '<option value="">Pilih Modul (sesuai penugasan Anda)</option>' +
+                assignedModules.map(mid => `<option value="${mid}">${mid} - ${allData.judulPraktikum[mid]?.namaJudul || mid}</option>`).join('');
+
+            // Saat modul berubah → isi kelompok yang memiliki aslab mencakup assistantNrp pada modul tsb
+            modulSelect.addEventListener('change', ()=>{
+                const modulId = modulSelect.value;
+                kelompokSelect.innerHTML = '<option value="">Pilih Kelompok</option>';
+                praktikanSelect.innerHTML = '<option value="">Pilih Praktikan</option>';
+                if (!modulId) { helper.textContent = ''; return; }
+                const matchingKelompok = Object.keys(allData.kelompok).filter(kId => {
+                    const k = allData.kelompok[kId];
+                    const j = k[modulId];
+                    return j && Array.isArray(j.aslab) && j.aslab.includes(assistantNrp);
+                });
+                kelompokSelect.innerHTML += matchingKelompok.map(kId => `<option value="${kId}">${kId} - ${allData.kelompok[kId].namaKelompok}</option>`).join('');
+                helper.textContent = matchingKelompok.length ? `Anda mengampu ${matchingKelompok.length} kelompok untuk ${modulId}.` : 'Tidak ada kelompok untuk modul ini.';
+            });
+
+            // Saat kelompok berubah → isi daftar praktikan users.* yang memiliki users[uid].kelompokId == kelompok terpilih
+            kelompokSelect.addEventListener('change', ()=>{
+                const selectedKelompok = kelompokSelect.value;
+                praktikanSelect.innerHTML = '<option value="">Pilih Praktikan</option>';
+                if (!selectedKelompok) { return; }
+                const praktikanList = Object.values(allData.users).filter(u => u.role === 'praktikan' && u.kelompokId === selectedKelompok);
+                praktikanSelect.innerHTML += praktikanList.map(u => `<option value="${u.nrp}">${u.nrp} - ${u.nama}</option>`).join('');
+            });
+        }
+
+        // Submit saves numeric scores to users/<nrp>/nilai/<E?>
+        function wireSubmission(){
+            const form = document.getElementById('assessment-form');
+            const modulSelect = document.getElementById('modul');
+            const kelompokSelect = document.getElementById('kelompok');
+            const praktikanSelect = document.getElementById('praktikan');
+            form.addEventListener('submit', (e)=>{
+            e.preventDefault();
+                const targetNrp = praktikanSelect.value;
+                const modulId = modulSelect.value;
+                const kelompokId = kelompokSelect.value;
+                const preLab = (document.getElementById('pre-lab').value || '').trim();
+                const inLab = (document.getElementById('in-lab').value || '').trim();
+                const postLab = (document.getElementById('post-lab').value || '').trim();
+                const catatan = (document.getElementById('catatan').value || '').trim();
+                if (!modulId || !kelompokId || !targetNrp){ alert('Lengkapi Modul, Kelompok, dan Praktikan.'); return; }
+                const payload = {};
+                if (preLab !== '') payload['pre-lab'] = preLab;
+                if (inLab !== '') payload['in-lab'] = inLab;
+                if (postLab !== '') payload['post-lab'] = postLab;
+                if (Object.keys(payload).length === 0 && catatan === ''){ alert('Isi minimal satu nilai atau catatan.'); return; }
+                if (catatan !== '') payload['catatan'] = catatan;
+                const nilaiRef = database.ref(`users/${targetNrp}/nilai/${modulId}`);
+                // simpan dengan timestamp untuk histori
+                nilaiRef.update(Object.assign(payload, { _updatedAt: Date.now(), _by: localStorage.getItem('fislab-nrp') || '' })).then(()=>{
+                    alert('Nilai tersimpan.');
+                    form.reset();
+                }).catch(err=> alert('Gagal menyimpan: ' + err.message));
+            });
+        }
+
+        // Render history for groups handled by the assistant
+        function renderHistory(allData, assistantNrp){
+            const tbody = document.getElementById('history-body');
+            const rows = [];
+            // Cari semua kelompok & modul yang diampu asisten ini
+            for (const kId in allData.kelompok){
+                const k = allData.kelompok[kId];
+                for (const mid in k){
+                    if (!mid.startsWith('E')) continue;
+                    const j = k[mid];
+                    if (!j || !Array.isArray(j.aslab) || !j.aslab.includes(assistantNrp)) continue;
+                    // Ambil semua praktikan pada kelompok ini
+                    for (const uid in allData.users){
+                        const u = allData.users[uid];
+                        if (u.role !== 'praktikan' || u.kelompokId !== kId) continue;
+                        const n = (u.nilai && u.nilai[mid]) || {};
+                        const pre = n['pre-lab'] || '';
+                        const inn = n['in-lab'] || '';
+                        const post = n['post-lab'] || '';
+                        const avg = [pre,inn,post].map(x=> parseFloat(x)).filter(x=> !isNaN(x)).reduce((a,b)=>a+b,0);
+                        const count = [pre,inn,post].map(x=> parseFloat(x)).filter(x=> !isNaN(x)).length;
+                        const avgStr = count ? (avg/count).toFixed(2) : '-';
+                        const updatedAt = n._updatedAt ? new Date(n._updatedAt).toLocaleString() : '-';
+                        rows.push({ kId, u, mid, pre, inn, post, avgStr, updatedAt });
+                    }
+                }
+            }
+            rows.sort((a,b)=> (a.kId.localeCompare(b.kId)) || (a.u.nrp.localeCompare(b.u.nrp)) || (parseInt(a.mid.replace('E',''))-parseInt(b.mid.replace('E',''))));
+            tbody.innerHTML = rows.map(r => {
+                const nilaiCombined = `${r.pre||'-'} / ${r.inn||'-'} / ${r.post||'-'}`;
+                return `<tr>
+                    <td>${r.updatedAt}</td>
+                    <td>${r.kId}</td>
+                    <td>${r.u.nrp}</td>
+                    <td>${r.u.nama}</td>
+                    <td>${r.mid}</td>
+                    <td>${nilaiCombined}</td>
+                    <td>${r.avgStr}</td>
+                    <td><button class="cancel-grade" data-nrp="${r.u.nrp}" data-modul="${r.mid}">Batalkan Nilai</button></td>
+                </tr>`;
+            }).join('');
+
+            // Delegasi klik pembatalan nilai: hapus field nilai (pre/in/post) seperti pembatalan jadwal
+            tbody.addEventListener('click', (e)=>{
+                const btn = e.target && e.target.closest('.cancel-grade');
+                if (!btn) return;
+                const nrp = btn.dataset.nrp; const mid = btn.dataset.modul;
+                if (!confirm(`Batalkan nilai ${mid} untuk ${nrp}?`)) return;
+                const ref = database.ref(`users/${nrp}/nilai/${mid}`);
+                ref.update({ 'pre-lab': null, 'in-lab': null, 'post-lab': null, 'catatan': null, _updatedAt: null, _by: null })
+                .then(()=> ref.once('value'))
+                .then(snap=>{
+                    const val = snap.val() || {};
+                    // Beri minimal node kosong agar rapi: hapus kunci nilai jika tersisa kosong
+                    const keys = ['pre-lab','in-lab','post-lab','_updatedAt','_by'];
+                    const still = keys.filter(k => Object.prototype.hasOwnProperty.call(val, k));
+                    if (still.length){
+                        keys.forEach(k=> ref.child(k).remove().catch(()=>{}));
+                    }
+                    // Refresh baris tanpa reload penuh
+                    btn.closest('tr').querySelectorAll('td')[5].textContent = '- / - / -';
+                    btn.closest('tr').querySelectorAll('td')[6].textContent = '-';
+                })
+                .catch(err=> alert('Gagal membatalkan nilai: ' + err.message));
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const loggedInNrp = localStorage.getItem('fislab-nrp');
+            if (!loggedInNrp){ alert('Anda belum login.'); window.location.href='index.html'; return; }
+            database.ref('users/'+loggedInNrp).once('value', (snap)=>{
+                if (!snap.exists()){ alert('Data pengguna tidak ditemukan.'); window.location.href='index.html'; return; }
+                const user = snap.val();
+                if (user.role) localStorage.setItem('fislab-role', user.role);
+                ensureAssistantOrRedirect();
+                database.ref('/').once('value', (dbSnap)=>{
+                    if (dbSnap.exists()){
+                        populateFormOptions(dbSnap.val(), loggedInNrp);
+                        wireSubmission();
+                        renderHistory(dbSnap.val(), loggedInNrp);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
